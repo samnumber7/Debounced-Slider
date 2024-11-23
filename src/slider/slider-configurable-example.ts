@@ -1,10 +1,12 @@
 import {Component} from '@angular/core';
+import {CommonModule} from '@angular/common';
 import {MatSliderModule} from '@angular/material/slider';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {FormsModule} from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatCardModule} from '@angular/material/card';
+import { interval,map, take, tap } from 'rxjs';
 
 /**
  * @title Configurable slider
@@ -14,12 +16,13 @@ import {MatCardModule} from '@angular/material/card';
   templateUrl: 'slider-configurable-example.html',
   styleUrl: 'slider-configurable-example.css',
   imports: [
+    CommonModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
     MatCheckboxModule,
-    MatSliderModule,
+    MatSliderModule
   ],
 })
 export class SliderConfigurableExample {
@@ -30,6 +33,26 @@ export class SliderConfigurableExample {
   step = 1;
   thumbLabel = false;
   value = 0;
+  emittedValuesString = '';
+
+  SliderConfigurableExample() {
+    console.log('hello');
+    interval(100).pipe(
+      map(x => Math.random()),
+      tap(x => console.log(x)),
+      map(x => x + ' ' + this.emittedValuesString),
+      take(100)
+    ).subscribe();
+  }
+
+//   import { fromEvent, scan, debounce, interval, timer } from 'rxjs';
+
+// const clicks = fromEvent(document, 'click');
+// const result = clicks.pipe(
+//   scan((i) => ++i, 0),
+//   debounce((i) => timer(800))
+// );
+// result.subscribe((x) => console.log(x));
 }
 
 
