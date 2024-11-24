@@ -56,7 +56,10 @@
   </mat-card-content>
 </mat-card>
 <mat-card class="example-result-card">
-  <mat-card-content *ngIf="emittedValues$ | async as emittedValues">{{emittedValues}}</mat-card-content>
+  <mat-card-content *ngIf="sliderValues$ | async as sliderValues">{{sliderValues}}</mat-card-content>
+</mat-card>
+<mat-card class="example-result-card">
+  <mat-card-content *ngIf="randomValues$ | async as randomValues">{{randomValues}}</mat-card-content>
 </mat-card>
 
 

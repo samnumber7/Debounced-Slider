@@ -6,7 +6,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatCardModule} from '@angular/material/card';
-import { interval,map, take, tap, scan, Observable } from 'rxjs';
+import { interval,map, take, filter, tap, scan, Observable, debounceTime, sample, sampleTime } from 'rxjs';
 
 /**
  * @title Configurable slider
@@ -34,7 +34,8 @@ export class SliderConfigurableExample {
   showTicks = new FormControl(false);
   thumbLabel= new FormControl(false);
   sliderControl = new FormControl(1);
-  emittedValues$ = new Observable<string>();  
+  randomValues$ = new Observable<string>(); 
+  sliderValues$ = new Observable<number|null>();
 
   
   //valueChanges on slider to get an Observable for those values, debounce this value
@@ -50,24 +51,24 @@ export class SliderConfigurableExample {
     this.sliderControl.valueChanges.subscribe(value => {
       this.sliderConfigInput.setValue(value);
     });
+
+    this.sliderValues$ = this.sliderControl.valueChanges.pipe(
+      debounceTime(300),
+      map((x) => x ? 1000 - (x-1)*9 : null)
+    )
     
-    this.emittedValues$ = interval(100).pipe(
+    this.randomValues$ = interval(100).pipe(
       map(() => Math.round(Math.random()*10_000)),
       //tap(x => console.log(x)),
       scan((all, x) => `${x} ${all}`, ''),
-      take(100),
-      //sample()
+      take(500),
+      //sampleTime(this.sliderValues$.subscribe())
     );
   }
 
-//   import { fromEvent, scan, debounce, interval, timer } from 'rxjs';
-
-// const clicks = fromEvent(document, 'click');
-// const result = clicks.pipe(
-//   scan((i) => ++i, 0),
-//   debounce((i) => timer(800))
-// );
-// result.subscribe((x) => console.log(x));
+  // is it possible to use the sample or sampleTime RxJS operators in an Observable 
+  // pipeline and make the sampling interval vary while the pipeline is handling events? 
+  // Or is the sampling interval static once the source observable beings emitting?
 }
 
 
