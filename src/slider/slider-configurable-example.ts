@@ -2,11 +2,11 @@ import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatSliderModule} from '@angular/material/slider';
 import {MatCheckboxModule} from '@angular/material/checkbox';
-import {FormsModule} from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatCardModule} from '@angular/material/card';
-import { interval,map, take, tap } from 'rxjs';
+import { interval,map, take, tap, scan, Observable } from 'rxjs';
 
 /**
  * @title Configurable slider
@@ -17,32 +17,47 @@ import { interval,map, take, tap } from 'rxjs';
   styleUrl: 'slider-configurable-example.css',
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule,
     MatCheckboxModule,
     MatSliderModule
   ],
 })
 export class SliderConfigurableExample {
-  disabled = false;
-  max = 100;
-  min = 0;
-  showTicks = false;
-  step = 1;
-  thumbLabel = false;
-  value = 0;
-  emittedValuesString = '';
+  sliderConfigInput = new FormControl(1);
+  min = new FormControl(1);
+  max = new FormControl(100);
+  step = new FormControl(1);
+  disabled = new FormControl(false);
+  showTicks = new FormControl(false);
+  thumbLabel= new FormControl(false);
+  sliderControl = new FormControl(1);
+  emittedValues$ = new Observable<string>();  
 
-  SliderConfigurableExample() {
-    console.log('hello');
-    interval(100).pipe(
-      map(x => Math.random()),
-      tap(x => console.log(x)),
-      map(x => x + ' ' + this.emittedValuesString),
-      take(100)
-    ).subscribe();
+  
+  //valueChanges on slider to get an Observable for those values, debounce this value
+  //// we want to conver the slider value (1-100) to 1000 to 100 (slow sampling to fast sampling)
+  // invert slider value: https://stackoverflow.com/questions/929103/convert-a-number-range-to-another-range-maintaining-ratio
+  //  return 1000 - (x - 1) * 9 
+
+  constructor() {
+    this.sliderConfigInput.valueChanges.subscribe(value => {
+      this.sliderControl.setValue(value);
+    });
+    
+    this.sliderControl.valueChanges.subscribe(value => {
+      this.sliderConfigInput.setValue(value);
+    });
+    
+    this.emittedValues$ = interval(100).pipe(
+      map(() => Math.round(Math.random()*10_000)),
+      //tap(x => console.log(x)),
+      scan((all, x) => `${x} ${all}`, ''),
+      take(100),
+      //sample()
+    );
   }
 
 //   import { fromEvent, scan, debounce, interval, timer } from 'rxjs';
